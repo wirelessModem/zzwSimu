@@ -24,7 +24,7 @@ b=sum(BerRaw,2)/10;
 semilogy(1:30,b);hold on;
 b=sum(BerZF,2)/10;
 semilogy(1:30,b);
- 
+  
 %scatterplot(RxDataTd(1,:))
 
 %a=txWaveFormWithCh(37:end);% remove CP
