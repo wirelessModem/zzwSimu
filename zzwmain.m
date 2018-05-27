@@ -13,18 +13,19 @@ puschDMRS = ltePUSCHDRS(ue,chs);
 DMRS=[puschDMRS(1:300).';puschDMRS(301:end).']; % only use the DMRS(1,:)
 
 Ber=[];
-for SNR=1:30
-    for i=1:10
-        BerRaw(SNR,i)=runonce('LS','ZFxx',SNR);
+for SNR=1:1:30
+    for i=1:100
+        BerRaw(SNR,i)=runonce('noCHE','noEQ',SNR);
         BerZF(SNR,i)=runonce('LS','ZF',SNR);
     end
     
 end
 b=sum(BerRaw,2)/10;
-semilogy(1:30,b);hold on;
+semilogy(1:30,b,'b--');hold on;
 b=sum(BerZF,2)/10;
-semilogy(1:30,b);
-  
+semilogy(1:30,b,'r-x');hold on;
+semilogy(30:30,0.01:0.1:0.01,'g.');grid on;
+
 %scatterplot(RxDataTd(1,:))
 
 %a=txWaveFormWithCh(37:end);% remove CP

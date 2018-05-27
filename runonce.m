@@ -38,6 +38,10 @@ end
 %% wireless channel
 a=fft(txWaveForm); %F2T
 txWaveFormWithCh=awgn(a,SNR);%,'measured');
+
+%chan=rayleighchan(ts,fd);  
+%y=filter(chan,x);%¹ýÐÅµÀ  
+
 txWaveFormWithCh=ifft(txWaveFormWithCh); % T2F
 %txWaveFormWithCh=txWaveForm;
 
@@ -65,10 +69,11 @@ end
 %% T2F
 rxDataFd=[];
 
-rxDmrsFd=rxDmrs;%fft(rxDmrs,sysCfg.fftsize);
+rxDmrsFd=fft(rxDmrs,sysCfg.fftsize);
 rxDmrsFd=rxDmrsFd(1:sysCfg.subcarriers);% need demapping!!!
 for i=1:6
-    a=rxData(:,i);%fft(rxData(:,i),sysCfg.fftsize);
+    %a=rxData(:,i);%fft(rxData(:,i),sysCfg.fftsize);
+    a=fft(rxData(:,i),sysCfg.fftsize);
     a=a(1:sysCfg.subcarriers);% need demapping!!!
     rxDataFd=[rxDataFd,a];
     %scatterplot(a)
@@ -77,19 +82,22 @@ end
 %% %%%%%%%%%%%%%channel estimation
 %% %%%%%%%%%%%%%CHE LS mothod
 if strcmp(CHE,'LS')%CHE=='LS'
-    txDmrsFd=ifft(txDmrs,sysCfg.fftsize);
-    Hls=rxDmrs./txDmrsFd;
-
-    %Hls=conj(txDmrs).*rxDmrsFd;
+    %txDmrsFd=ifft(txDmrs,sysCfg.fftsize);
+    %rxDmrsp=fft(rxDmrs,sysCfg.fftsize);
+    %Hls=rxDmrsFd./txDmrsFd;
+    %Hd=conj(txDmrs).*rxDmrsFd;
+    Hls=conj(txDmrs).*rxDmrsFd;
     %% time field select
-    ht=fft(Hls,sysCfg.subcarriers);
+    ht=ifft(Hls,sysCfg.subcarriers);
     ht(16:end)=0;
-    %ht(abs(ht)<max(abs(ht))/20)=0;
+    ht(abs(ht)<max(abs(ht))/20)=0;
     Hd=fft(ht,sysCfg.subcarriers);
-    Hls=Hd;
+    %Hls=Hd;
     %%
-    pw=abs(Hls);
-    Hd=Hls./pw;
+    %pw=abs(Hls);
+    %Hd=Hls./pw;
+elseif strcmp(CHE,'LMMSE')
+    Hlsx=conj(txDmrs).*rxDmrs
 else
     Hd=ones(sysCfg.subcarriers,1);
 end
@@ -101,14 +109,14 @@ if strcmp(EQ,'ZF')
     %% %%%%%%%%%%%%%ZF
     for i=1:6
         aFd = Hd.*rxDataFd(:,i);
-        aTd=fft(aFd,sysCfg.subcarriers);
+        aTd=aFd;%fft(aFd,sysCfg.subcarriers);
         rxDataTd = [rxDataTd,aTd];
     end
 else
     %% %%%%%%%%%%%%%draw raw RxData
     for i=1:6
         aFd = Hd.*rxDataFd(:,i);
-        aTd=fft(aFd,sysCfg.subcarriers);
+        aTd=aFd;%fft(aFd,sysCfg.subcarriers);
         rxDataTd = [rxDataTd,aTd];
         %scatterplot(aFd)
     end
