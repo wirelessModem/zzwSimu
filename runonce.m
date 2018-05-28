@@ -45,12 +45,17 @@ end
 %% wireless channel
 a=fft(txWaveForm); %F2T
 if strcmp(chan,'awgn')
+    %txWaveFormWithCh=a;
     txWaveFormWithCh=awgn(a,SNR);%,'measured');
 elseif strcmp(chan,'rayleigh') % and +awgn
     txWaveFormWithCh=awgn(a,SNR);%,'measured');
+    %txWaveFormWithCh=a;
     %c1 = rayleighchan(1e-5,130) % Create object.
     %c1.PathDelays = [0 1e-6]    % Change the number of delays.
-    chan=rayleighchan(ts,fd);  
+    %tau=[0];%,12*ts];
+    chan=rayleighchan(ts,fd);%,tau);  
+    %c1.PathDelays = [0 1e-6] 
+    %chan.PathDelays=[ 0 4*ts];
     txWaveFormWithCh=filter(chan,txWaveFormWithCh);%¹ýÐÅµÀ  
 end
 
@@ -159,41 +164,20 @@ elseif strcmp(CHE,'LS1')%CHE=='LS'
     %%
     %pw=abs(Hls);
     %Hd=Hls./pw;    
-elseif strcmp(CHE,'LS2')%CHE=='LS'
+elseif strcmp(CHE,'LMMSE')%CHE=='LS'
     %txDmrsFd=ifft(txDmrs,sysCfg.fftsize);
     %rxDmrsp=fft(rxDmrs,sysCfg.fftsize);
     %Hls=rxDmrsFd./txDmrsFd;
     %Hd=conj(txDmrs).*rxDmrsFd;
     %Hls=conj(txDmrs).*rxDmrsSym;
-    %Hd=CE_lmmse();
-    Hls=rxDmrsSym./txDmrs;
-    %% time field select
-    a=subMapFreq(Hls,subcarriers,fftsize);
-    b=ifft(a);
-    b(sysCfg.maxGroupDelay+1:end-sysCfg.maxGroupDelay)=0;
-    %b=b(1:sysCfg.maxGroupDelay);
-    bb=sort(abs(b),'descend');
-    b(abs(b)<abs(bb(maxPathNum)))=0;
-    %b(32:end)=0;
-    %b(abs(b)<max(abs(b))/10)=0;
-    %[envHigh, envLow] = envelope(b,4,'peak');
-    %envMean = (envHigh+envLow)/2;
-    %a=ones(1,4)/4;
-    %fb=filter(a,1,b);
-    c=fft(b,fftsize);
-    Hd=FreqMapSub(c,subcarriers);
+    %Hmmse=CE_lmmse(Yrs,Nrb,RS,Lengthdelay,ppsMaxPathnum,Nfft)
+    Hd=CE_lmmse(rxDmrsSym,sysCfg.Nrb,txDmrs,sysCfg.maxGroupDelay,sysCfg.maxPathNum,sysCfg.fftsize);
+    Hd=Hd;
     Hd_abs=abs(Hd).^2;
+    %Hd=Hd./Hd_abs;
     Hd=conj(Hd)./Hd_abs;
     
-    %ht=ifft(Hls,sysCfg.subcarriers);
-    %ht(16:end)=0;
-    %ht(abs(ht)<max(abs(ht))/20)=0;
-    %Hd=fft(ht,sysCfg.subcarriers);
-    %Hls=Hd;
-    %%
-    %pw=abs(Hls);
-    %Hd=Hls./pw;
-elseif strcmp(CHE,'LMMSE')
+elseif strcmp(CHE,'LMMSExx')
     Hlsx=conj(txDmrs).*rxDmrs
 else
     Hd=ones(sysCfg.subcarriers,1);
@@ -206,6 +190,7 @@ if strcmp(EQ,'ZF')
     %% %%%%%%%%%%%%%ZF
     for i=1:6
         aFd = Hd.*rxDataSym(:,i);
+        %aFd = conj(Hd).*rxDataSym(:,i);
         aTd=aFd;%fft(aFd,sysCfg.subcarriers);
         rxDataTd = [rxDataTd,aTd];
     end

@@ -3,6 +3,18 @@ clear all;
 close all;
 sysCfg=sysCfgStr();
 global puschDMRS;
+global FFTLxL;
+
+Lengthdelay=sysCfg.maxGroupDelay;
+
+Wfft=exp(-j*2*pi/sysCfg.fftsize);
+%PP=2*eNB.Nrb;%RS point number!!!
+for p=1:2*sysCfg.Nrb*6
+    FFTpl(p,:)=power(exp(-j*2*pi/sysCfg.fftsize*(p-1)),[0:1:Lengthdelay-1]);
+end
+%sys.FFTpl=FFTpl;
+FFTLxL=FFTpl'*FFTpl; % ctranspose - Complex conjugate transpose   
+
 
 %% generate DMRS
 ue.NPUSCHID = 42;
@@ -26,40 +38,20 @@ for SNR=1:1:30
         %BerLS1(SNR,i)=runonce('LS1','ZF',SNR,'awgn');
         %BerLS11(SNR,i)=runonce('LS1','ZF',SNR,'rayleigh');
         
-        %BerLS2(SNR,i)=runonce('LS2','ZF',SNR,'awgn');
-        BerLS21(SNR,i)=runonce('LS2','ZF',SNR,'rayleigh');
+        BerLS2(SNR,i)=runonce('LMMSE','ZF',SNR,'awgn');
+        BerLS21(SNR,i)=runonce('LMMSE','ZF',SNR,'rayleigh');
     end
     
 end
 
-
+save Bers.mat Ber Ber1 BerLS0 BerLS01 BerLS1 BerLS11 BerLS2 BerLS21;
+drawResult();
 %b=sum(BerRaw,2)/10;
 %semilogy(1:SNR,b,'b--');hold on;
 
-b=sum(Ber,2)/10;
-semilogy(1:SNR,b,'b-o');hold on;
-b=sum(Ber1,2)/10;
-semilogy(1:SNR,b,'b-*');hold on;
-
-b=sum(BerLS0,2)/10;
-semilogy(1:SNR,b,'g-o');hold on;
-b=sum(BerLS01,2)/10;
-semilogy(1:SNR,b,'g-*');hold on;
-
-b=sum(BerLS1,2)/10;
-semilogy(1:SNR,b,'r-s');hold on;
-b=sum(BerLS11,2)/10;
-semilogy(1:SNR,b,'r-d');hold on;
 
 
-b=sum(BerLS2,2)/10;
-semilogy(1:SNR,b,'r-o');hold on;
-b=sum(BerLS21,2)/10;
-semilogy(1:SNR,b,'r-*');hold on;
-
-semilogy(SNR:SNR,0.01:0.1:0.01,'g.');grid on;
-
-save Bers.mat Ber Ber1 BerLS0 BerLS01 BerLS1 BerLS11 BerLS2 BerLS21;
+%save Bers.mat Ber Ber1 BerLS0 BerLS01 BerLS1 BerLS11 BerLS2 BerLS21;
 
 %scatterplot(RxDataTd(1,:))
 

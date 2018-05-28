@@ -7,11 +7,11 @@ classdef sysCfgStr
         firstCp=40;
         normalCp=36;
         maxPathNum=16;
-        maxGroupDelay=36;
+        maxGroupDelay=36;%36;%150;
         samplerate=7.68e6;
         ts=1/7.68e6;
         symboln=7.68e6/512/1000; %ms
-        Nrb=50;
+        Nrb=25;
         %fftsize=256;
         %firstCp=20;
         %normalCp=18;

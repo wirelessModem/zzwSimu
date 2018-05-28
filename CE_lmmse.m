@@ -1,5 +1,6 @@
-function Hmmse=CE_lmmse(Yrs,Nrb,RS,Lengthdelay,ppsMaxPathnum,Nfft,FFTLxL)
-
+function Hmmse=CE_lmmse(Yrs,Nrb,RS,Lengthdelay,ppsMaxPathnum,Nfft)
+global FFTLxL;
+subCars = Nrb*12;
 %extract data
 %Ydata = Ydata(dataPos);
 
@@ -7,14 +8,20 @@ function Hmmse=CE_lmmse(Yrs,Nrb,RS,Lengthdelay,ppsMaxPathnum,Nfft,FFTLxL)
 Hlsx=(conj(RS).*Yrs);
 
 %% here, we place LS.H to right position without Shift postprocessing!!!
-Hls=subMapFreq(Hlsx,subCars,FFtSize);
+Hls=Hlsx;%subMapFreq(Hlsx,subCars,Nfft);
+%k=1:6:subCars;
+%Hls=[Hlsx(1:6:Nrb*6); 0 ;Hlsx(Nrb*6+6:6:end)];
+
+%Hls(6*k-5)=Hlsx(6*k-5);
+%Hls=Hlsx;%[Hlsx(1:150);0;0;0;Hlsx(151:end)];
 
 %% LS.H->time.h
 %htime=sqrt(2048)*sqrt(2048/1200)*ifft(Hls,2048);
 htime=ifft(Hls,Nfft);
+htime=reshape(htime,1,length(htime));
 %htime=ifft(Hls,2048);
-ht=htime(1:Lengthdelay);
-
+ht=htime(1:Lengthdelay);%256);%Lengthdelay);
+%ht=[htime(end-16+1:end) htime(1:Lengthdelay-16)];
 %% normalization!!
 %ht=ht./sqrt(sum(ht*ht'));
 
@@ -74,9 +81,11 @@ Hin=Hin.';
 %Hin=Hin/sum(abs(Hin));
 hmmse(PathIndex)=Hin;%time Hmmse!!!
 
-
+%hmmse=[hmmse(17:end),zeros(1,Nfft-length(hmmse)),hmmse(1:16)];
 
 %% fft time.h->Freq.H
 H=fft(hmmse,Nfft);%/sqrt(2048/1200);%/sqrt(2048);
-Hmmse=FreqMapSub(H,subCars);
+%Hmmse=[H(1:subCars/2) H(subCars/2+2:subCars+1)];%[H(1:150),H(152:301)];
+Hmmse=H(1:subCars);%FreqMapSub(H,subCars);
 Hmmse=Hmmse*(Nfft);
+Hmmse=reshape(Hmmse,length(Hmmse),1);
