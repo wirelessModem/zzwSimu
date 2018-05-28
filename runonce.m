@@ -1,7 +1,11 @@
-function ber=runonce(CHE,EQ,SNR)
+function ber=runonce(CHE,EQ,SNR,chan)
 global puschDMRS;
 sysCfg=sysCfgStr();
-symN=sysCfg.subcarriers;
+subcarriers=sysCfg.subcarriers;
+ts=sysCfg.ts;
+fd=0;
+fftsize=sysCfg.fftsize;
+maxPathNum=sysCfg.maxPathNum;
 %% ready Tx data
 txData=[];
 txWaveForm=[];
@@ -12,7 +16,7 @@ for i=1:7
         txDmrs=puschDMRS(1:sysCfg.subcarriers);
         txSymbols=txDmrs;
     else
-        txSymbols=lteSymbolModulate(randi(2,1,sysCfg.modbits*symN)-1, sysCfg.modm);
+        txSymbols=lteSymbolModulate(randi(2,1,sysCfg.modbits*subcarriers)-1, sysCfg.modm);
         txData=[txData,txSymbols];
     end
     %% do DFT :sysCfg.subcarriers
@@ -21,8 +25,11 @@ for i=1:7
     %if(i==4)
     %    txDmrsFd = txPrecodingSym;
     %end
+    %% Data->SubCarrier Mapping[Shift]
+    fftInData=subMapFreq(txPrecodingSym,subcarriers,fftsize);
+
     %% do IFFT :sysCfg.fftsize [shift processing!!!!]
-    a=ifft(txPrecodingSym,sysCfg.fftsize);
+    a=ifft(fftInData,sysCfg.fftsize);
     if(i==1)
         WaveForm=[a(end-sysCfg.firstCp+1:end);a];% add CP
     else
@@ -37,10 +44,18 @@ end
 
 %% wireless channel
 a=fft(txWaveForm); %F2T
-txWaveFormWithCh=awgn(a,SNR);%,'measured');
+if strcmp(chan,'awgn')
+    txWaveFormWithCh=awgn(a,SNR);%,'measured');
+elseif strcmp(chan,'rayleigh') % and +awgn
+    txWaveFormWithCh=awgn(a,SNR);%,'measured');
+    %c1 = rayleighchan(1e-5,130) % Create object.
+    %c1.PathDelays = [0 1e-6]    % Change the number of delays.
+    chan=rayleighchan(ts,fd);  
+    txWaveFormWithCh=filter(chan,txWaveFormWithCh);%过信道  
+end
 
-%chan=rayleighchan(ts,fd);  
-%y=filter(chan,x);%过信道  
+
+
 
 txWaveFormWithCh=ifft(txWaveFormWithCh); % T2F
 %txWaveFormWithCh=txWaveForm;
@@ -70,28 +85,110 @@ end
 rxDataFd=[];
 
 rxDmrsFd=fft(rxDmrs,sysCfg.fftsize);
-rxDmrsFd=rxDmrsFd(1:sysCfg.subcarriers);% need demapping!!!
+%rxDmrsFd=rxDmrsFd(1:sysCfg.subcarriers);% need demapping!!!
 for i=1:6
     %a=rxData(:,i);%fft(rxData(:,i),sysCfg.fftsize);
     a=fft(rxData(:,i),sysCfg.fftsize);
-    a=a(1:sysCfg.subcarriers);% need demapping!!!
+    %a=a(1:sysCfg.subcarriers);% need demapping!!!
     rxDataFd=[rxDataFd,a];
     %scatterplot(a)
 end
 
+%% SubCarrier->Data DeMapping[Shift]
+rxDmrsSym=FreqMapSub(rxDmrsFd,subcarriers);
+%rxDmrsSym=[rxDmrsFd(end-(subcarriers/2)+1:end);rxDmrsFd(2:subcarriers/2+1)];
+for i=1:6
+    rxDataSym(:,i)=FreqMapSub(rxDataFd(:,i),subcarriers);
+    %rxDataSym(:,i)=[rxDataFd(end-(subcarriers/2)+1:end,i);rxDataFd(2:subcarriers/2+1,i)];
+end
+
+    
 %% %%%%%%%%%%%%%channel estimation
 %% %%%%%%%%%%%%%CHE LS mothod
-if strcmp(CHE,'LS')%CHE=='LS'
+if strcmp(CHE,'LS0')%CHE=='LS'
     %txDmrsFd=ifft(txDmrs,sysCfg.fftsize);
     %rxDmrsp=fft(rxDmrs,sysCfg.fftsize);
     %Hls=rxDmrsFd./txDmrsFd;
     %Hd=conj(txDmrs).*rxDmrsFd;
-    Hls=conj(txDmrs).*rxDmrsFd;
+    Hls=rxDmrsSym./txDmrs;
+    
     %% time field select
-    ht=ifft(Hls,sysCfg.subcarriers);
-    ht(16:end)=0;
-    ht(abs(ht)<max(abs(ht))/20)=0;
-    Hd=fft(ht,sysCfg.subcarriers);
+    a=subMapFreq(Hls,subcarriers,fftsize);
+    h_td=ifft(a);
+    %b(32:end)=0;
+    h_td(48+1:end-48)=0;
+    %b(sysCfg.firstCp+1:end)=0;
+    %b(abs(b)<max(abs(b))/10)=0;
+    c=fft(h_td);
+    Hd=FreqMapSub(c,subcarriers);
+    Hd_abs=abs(Hd).^2;
+    Hd=conj(Hd)./Hd_abs;
+    %ht=ifft(Hls,sysCfg.subcarriers);
+    %ht(16:end)=0;
+    %ht(abs(ht)<max(abs(ht))/20)=0;
+    %Hd=fft(ht,sysCfg.subcarriers);
+    %Hls=Hd;
+    %%
+    %pw=abs(Hls);
+    %Hd=Hls./pw;
+elseif strcmp(CHE,'LS1')%CHE=='LS'
+    %txDmrsFd=ifft(txDmrs,sysCfg.fftsize);
+    %rxDmrsp=fft(rxDmrs,sysCfg.fftsize);
+    %Hls=rxDmrsFd./txDmrsFd;
+    %Hd=conj(txDmrs).*rxDmrsFd;
+    %Hls=conj(txDmrs).*rxDmrsSym;
+    Hls=rxDmrsSym./txDmrs;
+    %% time field select
+    a=subMapFreq(Hls,subcarriers,fftsize);
+    b=ifft(a);
+    %b(32:end)=0;
+    windth=sysCfg.firstCp*2;
+    b(windth+1:end-windth)=0;
+    %b(abs(b)<max(abs(b))/10)=0;
+    c=fft(b);
+    Hd=FreqMapSub(c,subcarriers);
+    Hd_abs=abs(Hd).^2;
+    Hd=conj(Hd)./Hd_abs;
+    %Hd=(Hd)./Hd_abs;
+    
+    %ht=ifft(Hls,sysCfg.subcarriers);
+    %ht(16:end)=0;
+    %ht(abs(ht)<max(abs(ht))/20)=0;
+    %Hd=fft(ht,sysCfg.subcarriers);
+    %Hls=Hd;
+    %%
+    %pw=abs(Hls);
+    %Hd=Hls./pw;    
+elseif strcmp(CHE,'LS2')%CHE=='LS'
+    %txDmrsFd=ifft(txDmrs,sysCfg.fftsize);
+    %rxDmrsp=fft(rxDmrs,sysCfg.fftsize);
+    %Hls=rxDmrsFd./txDmrsFd;
+    %Hd=conj(txDmrs).*rxDmrsFd;
+    %Hls=conj(txDmrs).*rxDmrsSym;
+    %Hd=CE_lmmse();
+    Hls=rxDmrsSym./txDmrs;
+    %% time field select
+    a=subMapFreq(Hls,subcarriers,fftsize);
+    b=ifft(a);
+    b(sysCfg.maxGroupDelay+1:end-sysCfg.maxGroupDelay)=0;
+    %b=b(1:sysCfg.maxGroupDelay);
+    bb=sort(abs(b),'descend');
+    b(abs(b)<abs(bb(maxPathNum)))=0;
+    %b(32:end)=0;
+    %b(abs(b)<max(abs(b))/10)=0;
+    %[envHigh, envLow] = envelope(b,4,'peak');
+    %envMean = (envHigh+envLow)/2;
+    %a=ones(1,4)/4;
+    %fb=filter(a,1,b);
+    c=fft(b,fftsize);
+    Hd=FreqMapSub(c,subcarriers);
+    Hd_abs=abs(Hd).^2;
+    Hd=conj(Hd)./Hd_abs;
+    
+    %ht=ifft(Hls,sysCfg.subcarriers);
+    %ht(16:end)=0;
+    %ht(abs(ht)<max(abs(ht))/20)=0;
+    %Hd=fft(ht,sysCfg.subcarriers);
     %Hls=Hd;
     %%
     %pw=abs(Hls);
@@ -108,14 +205,14 @@ rxDataTd = [];
 if strcmp(EQ,'ZF')
     %% %%%%%%%%%%%%%ZF
     for i=1:6
-        aFd = Hd.*rxDataFd(:,i);
+        aFd = Hd.*rxDataSym(:,i);
         aTd=aFd;%fft(aFd,sysCfg.subcarriers);
         rxDataTd = [rxDataTd,aTd];
     end
 else
     %% %%%%%%%%%%%%%draw raw RxData
     for i=1:6
-        aFd = Hd.*rxDataFd(:,i);
+        aFd = Hd.*rxDataSym(:,i);
         aTd=aFd;%fft(aFd,sysCfg.subcarriers);
         rxDataTd = [rxDataTd,aTd];
         %scatterplot(aFd)
