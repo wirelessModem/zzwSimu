@@ -15,6 +15,9 @@ Hls=Hlsx;%subMapFreq(Hlsx,subCars,Nfft);
 %Hls(6*k-5)=Hlsx(6*k-5);
 %Hls=Hlsx;%[Hlsx(1:150);0;0;0;Hlsx(151:end)];
 
+%k=1:6:subCars;
+%Hls=[];
+%Hls(k)=Hlsx(k);
 %% LS.H->time.h
 %htime=sqrt(2048)*sqrt(2048/1200)*ifft(Hls,2048);
 htime=ifft(Hls,Nfft);
@@ -50,13 +53,13 @@ else
 end
 
 %if sigma>0.0035
-    factor1=96;%25;
+    factor1=12;%8;%10;%15;%25;%96;%25;
     sigma_1=sigma*Nrb*factor1;
     
 %else
     %factor2=sqrt(2048/1200)*2; % for awgn is good
     %factor2=sqrt(2048/1200)*3.6; % 
-    factor2=4;%sqrt(2048/1200)*4.6; % 
+    factor2=2;%8;%4;%sqrt(2048/1200)*4.6; % 
     sigma_2=max(max(Rhh))*factor2;
 %    sigma=sys.sigma(2);
 if (sigma*100)>0.001
@@ -65,7 +68,7 @@ else
     sigma=sigma_2;
     
 end
-%sigma=max( sigma,max(max(Rhh))*factor2 );
+sigma=max( sigma,max(max(Rhh))*factor2 );
 deltaDiag=0;
 %sigma2=80;
 iRR=inv(Rhh);

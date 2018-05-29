@@ -6,8 +6,8 @@ classdef sysCfgStr
         fftsize=512;
         firstCp=40;
         normalCp=36;
-        maxPathNum=16;
-        maxGroupDelay=36;%36;%150;
+        maxPathNum=12;
+        maxGroupDelay=36;%floor(512/6);%44;%36;%36;%150;
         samplerate=7.68e6;
         ts=1/7.68e6;
         symboln=7.68e6/512/1000; %ms
@@ -20,8 +20,8 @@ classdef sysCfgStr
         %symboln=3.84e6/256/1000; %ms
         
         
-        modm='16QAM';%[1:BPSK,2:QPSK,4:16QAM,6:64QAM]
-        modbits=4;
+        modm='QPSK';%'16QAM';%[1:BPSK,2:QPSK,4:16QAM,6:64QAM]
+        modbits=2;%4;
         
     end
 end
