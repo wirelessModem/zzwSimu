@@ -5,7 +5,6 @@ sysCfg=sysCfgStr();
 
 channelchoise =chan;%'awgn';
 ts=sysCfg.ts;
-tsNsec=sysCfg.tsNsec;
 %channel type {'PedB', 'PedBcorr'}
 %ChanMod.PDP_dB = [0   -0.9  -4.9  -8    -7.8  -23.9; % Average power [dB]
 %                  0 200*10^-9 800*10^-9 1200*10^-9 2300*10^-9 3700*10^-9]; % delay (s)
@@ -15,19 +14,19 @@ tsNsec=sysCfg.tsNsec;
 %                  0 1*10^-9 80*10^-9 120*10^-9 230*10^-9 370*10^-9]; % delay (s)
 
 delay=[0 30 150 310 370 710 1090 1730 2510];%delay
-EVA.PDP_dB(1,:)=[0 -1.5 -1.4 -3.6 -0.6 -9.1 -7.0 -12.0 -16.9];%power(dB)
-EVA.PDP_dB(2,:)=ts*delay/tsNsec;
-EVA.normH = sqrt(sum(10.^(EVA.PDP_dB(1,:)/10)));
+EVA.PDP_dB(1,:)=[0 -1.0 -2.0 -3.0 -8.0 -17.2 -20.8];%power(dB)
+EVA.PDP_dB(2,:)=delay/tsNsec;
+EVA.normH = sqrt(sum(10.^(EPA.PDP_dB(1,:)/10)));
 
 delay=[0 50 120 200 230 500 1600 2300 5000];%delay
-ETU.PDP_dB(1,:)=[-1.0 -1.0 -1.0 0 0 0 -3.0 -5.0 -7.0];%power(dB)
-ETU.PDP_dB(2,:)=ts*delay/tsNsec;
-ETU.normH = sqrt(sum(10.^(ETU.PDP_dB(1,:)/10)));
+EVA.PDP_dB(1,:)=[0 -1.0 -2.0 -3.0 -8.0 -17.2 -20.8];%power(dB)
+EVA.PDP_dB(2,:)=delay/tsNsec;
+EVA.normH = sqrt(sum(10.^(EPA.PDP_dB(1,:)/10)));
 
 
 delay=[0 30 70 90 110 190 410];%delay
 EPA.PDP_dB(1,:)=[0 -1.0 -2.0 -3.0 -8.0 -17.2 -20.8];%power(dB)
-EPA.PDP_dB(2,:)=ts*delay/tsNsec;
+EPA.PDP_dB(2,:)=delay/tsNsec;
 EPA.normH = sqrt(sum(10.^(EPA.PDP_dB(1,:)/10)));
 
 
@@ -48,30 +47,10 @@ if strcmp(channelchoise,'awgn')
     channelOut0=Timesignal;
     %channelOut0=awgn(Timesignal,SNR);%,'measured');
 elseif strcmp(channelchoise,'ETU') %multiPath    
-    plusdoppler=rayleighchan(ts,300);%max is 300
-    plusdoppler.ResetBeforeFiltering=0;
-    plusdoppler.PathDelay=[0];% 10*ts ];%20*ts];
-    plusdoppler.AvgPathGaindB=[0];%; 0];% 0];
-    b=sqrt(sum(10.^(plusdoppler.AvgPathGaindB(1,:)/10)));
-    Timesignal=filter(plusdoppler,Timesignal)/b;
     channelmodel=EVA;
-elseif strcmp(channelchoise,'EVA') %multiPath 
-    plusdoppler=rayleighchan(ts,70);%max is 70
-    plusdoppler.ResetBeforeFiltering=0;
-    plusdoppler.PathDelay=[0];% 10*ts ];%20*ts];
-    plusdoppler.AvgPathGaindB=[0];%; 0];% 0];
-    b=sqrt(sum(10.^(plusdoppler.AvgPathGaindB(1,:)/10)));
-    Timesignal=filter(plusdoppler,Timesignal)/b;
+elseif strcmp(channelchoise,'EVA') %multiPath    
     channelmodel=EVA;
 elseif strcmp(channelchoise,'EPA')% multiPath+rayleigh!!!
-    
-     
-    plusdoppler=rayleighchan(ts,5);%max is 5
-    plusdoppler.ResetBeforeFiltering=0;
-    plusdoppler.PathDelay=[0];% 10*ts ];%20*ts];
-    plusdoppler.AvgPathGaindB=[0];%; 0];% 0];
-    b=sqrt(sum(10.^(plusdoppler.AvgPathGaindB(1,:)/10)));
-    Timesignal=filter(plusdoppler,Timesignal)/b;
     
 %     rayleih1=rayleighchan(sysCfg.ts,50);
 %     %rayleih1.StoreHistory=1; %this should be false if MaxDopplerShift is zero

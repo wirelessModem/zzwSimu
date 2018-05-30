@@ -4,12 +4,15 @@ close all;
 sysCfg=sysCfgStr();
 global puschDMRS;
 global FFTLxL;
-
+subcarriers=sysCfg.subcarriers;
 Lengthdelay=sysCfg.maxGroupDelay;
 
 Wfft=exp(-j*2*pi/sysCfg.fftsize);
 %PP=2*eNB.Nrb;%RS point number!!!
-for p=1:2*sysCfg.Nrb*6
+for p=1:subcarriers/2
+    FFTpl(p,:)=power(exp(-j*2*pi/sysCfg.fftsize*(p-1)),[0:1:Lengthdelay-1]);
+end
+for p=subcarriers/2+2:subcarriers+1
     FFTpl(p,:)=power(exp(-j*2*pi/sysCfg.fftsize*(p-1)),[0:1:Lengthdelay-1]);
 end
 %sys.FFTpl=FFTpl;
@@ -26,22 +29,25 @@ DMRS=[puschDMRS(1:300).';puschDMRS(301:end).']; % only use the DMRS(1,:)
 
 Ber=[];
 %load('Bers.mat');
-for SNR=12:1:30
-    for i=1:10
+for SNR=1:1:30
+    for i=1:100
+        [txWaveFormWithCh,txDmrs,txData]=TxSimu(SNR,'multipath');
         %BerRaw(SNR,i)=runonce('noCHE','noEQ',SNR,'awgn');
         %Ber(SNR,i)=runonce('noCHE','noEQ',SNR,'awgn');
         %Ber1(SNR,i)=runonce('noCHE','noEQ',SNR,'rayleigh');
         
         %BerLS0(SNR,i)=runonce('LS0','ZF',SNR,'awgn');
         %BerLS01(SNR,i)=runonce('LS0','ZF',SNR,'multipath');
-        %BerLS01(SNR,i)=runonce('LS0','ZF',SNR,'raylei');
+        BerLS02(SNR,i)=RxOnce(txWaveFormWithCh,txDmrs,txData,'LS0','ZF');
+        %BerLS03(SNR,i)=runonce('LS0','LMMSE',SNR,'raylei');
         
         %BerLS1(SNR,i)=runonce('LS1','ZF',SNR,'awgn');
         %BerLS21(SNR,i)=runonce('LS1','ZF',SNR,'multipath');
         
         %BerLS2(SNR,i)=runonce('LMMSE','ZF',SNR,'awgn');
         %BerLS21(SNR,i)=runonce('LMMSE','ZF',SNR,'multipath');
-        BerLS21(SNR,i)=runonce('LMMSE','ZF',SNR,'raylei');
+        %BerLS02(SNR,i)=runonce('LMMSE','ZF',SNR,'multipath');
+        BerLS03(SNR,i)=RxOnce(txWaveFormWithCh,txDmrs,txData'LMMSE','LMMSE');
     end
     
 end
@@ -50,8 +56,8 @@ end
 %drawResult();
 %b=sum(BerRaw,2)/10;
 %semilogy(1:SNR,b,'b--');hold on;
-maxV=size(BerLS21,1);
-dataLen=size(BerLS21,2);
+maxV=size(BerLS02,1);
+dataLen=size(BerLS02,2);
 
 %b=sum(BerRaw,2)/dataLen;
 %semilogy(1:maxV,b,'b--');hold on;
@@ -59,15 +65,17 @@ dataLen=size(BerLS21,2);
 % b=sum(BerLS2,2)/dataLen;
 % semilogy(1:maxV,b,'g--');hold on;
 % 
-%b=sum(BerLS01,2)/dataLen;
-%semilogy(1:maxV,b,'b-o');hold on;
+% b=sum(BerLS01,2)/dataLen;
+% semilogy(1:maxV,b,'b-o');hold on;
 
-% b=sum(BerLS02,2)/dataLen;
-% semilogy(1:maxV,b,'b-*');hold on;
+b=sum(BerLS02,2)/dataLen;
+semilogy(1:maxV,b,'b-*');hold on;
 
-
-b=sum(BerLS21,2)/dataLen;
-semilogy(1:maxV,b,'r-o');hold on;
+b=sum(BerLS03,2)/dataLen;
+semilogy(1:maxV,b,'b-o');hold on;
+% 
+% b=sum(BerLS21,2)/dataLen;
+% semilogy(1:maxV,b,'r-o');hold on;
 
 % b=sum(BerLS22,2)/dataLen;
 % semilogy(1:maxV,b,'r-*');hold on;
