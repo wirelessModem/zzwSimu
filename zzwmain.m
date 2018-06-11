@@ -29,20 +29,21 @@ DMRS=[puschDMRS(1:300).';puschDMRS(301:end).']; % only use the DMRS(1,:)
 
 Ber=[];
 %load('Bers.mat');
-for SNR=1:1:30
-    for i=1:20
-        [txWaveFormWithCh,txDmrs,txData]=TxSimu(SNR,'EVA');
+for SNR=1:30
+    for i=1:100
+        [txWaveFormWithCh,txDmrs,txData]=TxSimu(SNR,'EPA');
         %BerRaw(SNR,i)=runonce('noCHE','noEQ',SNR,'awgn');
         %Ber(SNR,i)=runonce('noCHE','noEQ',SNR,'awgn');
         %Ber1(SNR,i)=runonce('noCHE','noEQ',SNR,'rayleigh');
         
         %BerLS0(SNR,i)=runonce('LS0','ZF',SNR,'awgn');
         %BerLS01(SNR,i)=runonce('LS0','ZF',SNR,'multipath');
-        BerLS02(SNR,i)=RxOnce(txWaveFormWithCh,txDmrs,txData,'LMMSE','LMMSE');
+        BerLS01(SNR,i)=RxOnce(txWaveFormWithCh,txDmrs,txData,'LS0','ZF');
+        BerLS02(SNR,i)=RxOnce(txWaveFormWithCh,txDmrs,txData,'LS1','ZF');
         %BerLS03(SNR,i)=runonce('LS0','LMMSE',SNR,'raylei');
         
-        [txWaveFormWithCh,txDmrs,txData]=TxSimu(SNR,'ETU');
-        BerLS03(SNR,i)=RxOnce(txWaveFormWithCh,txDmrs,txData,'LMMSE','LMMSE');
+        %[txWaveFormWithCh,txDmrs,txData]=TxSimu(SNR,'ETU');
+        BerLS03(SNR,i)=RxOnce(txWaveFormWithCh,txDmrs,txData,'LMMSE','ZF');
         %BerLS1(SNR,i)=runonce('LS1','ZF',SNR,'awgn');
         %BerLS21(SNR,i)=runonce('LS1','ZF',SNR,'multipath');
         
@@ -69,12 +70,14 @@ dataLen=size(BerLS02,2);
 % 
 % b=sum(BerLS01,2)/dataLen;
 % semilogy(1:maxV,b,'b-o');hold on;
-
-b=sum(BerLS02,2)/dataLen;
+b=sum(BerLS01,2)/dataLen;
 semilogy(1:maxV,b,'b-*');hold on;
 
+b=sum(BerLS02,2)/dataLen;
+semilogy(1:maxV,b,'g--');hold on;
+
 b=sum(BerLS03,2)/dataLen;
-semilogy(1:maxV,b,'b-o');hold on;
+semilogy(1:maxV,b,'r-o');hold on;
 % 
 % b=sum(BerLS21,2)/dataLen;
 % semilogy(1:maxV,b,'r-o');hold on;

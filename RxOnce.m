@@ -70,7 +70,7 @@ end
     
 %% %%%%%%%%%%%%%channel estimation
 %% %%%%%%%%%%%%%CHE LS mothod
-if strcmp(CHE,'LS0')%CHE=='LS'
+if strcmp(CHE,'LS1')%CHE=='LS'
     %txDmrsFd=ifft(txDmrs,sysCfg.fftsize);
     %rxDmrsp=fft(rxDmrs,sysCfg.fftsize);
     %Hls=rxDmrsFd./txDmrsFd;
@@ -97,7 +97,7 @@ if strcmp(CHE,'LS0')%CHE=='LS'
     %%
     %pw=abs(Hls);
     %Hd=Hls./pw;
-elseif strcmp(CHE,'LS1')%CHE=='LS'
+elseif strcmp(CHE,'LS0')%CHE=='LS'
     %txDmrsFd=ifft(txDmrs,sysCfg.fftsize);
     %rxDmrsp=fft(rxDmrs,sysCfg.fftsize);
     %Hls=rxDmrsFd./txDmrsFd;
@@ -105,16 +105,17 @@ elseif strcmp(CHE,'LS1')%CHE=='LS'
     %Hls=conj(txDmrs).*rxDmrsSym;
     Hls=rxDmrsSym./txDmrs;
     %% time field select
-    a=subMapFreq(Hls,subcarriers,fftsize);
-    b=ifft(a);
-    %b(32:end)=0;
-    windth=sysCfg.firstCp;
-    b(windth+1:end-windth)=0;
-    %b(abs(b)<max(abs(b))/10)=0;
-    c=fft(b);
-    Hd=FreqMapSub(c,subcarriers);
-    Hd_abs=abs(Hd).^2;
-    Hd=conj(Hd)./Hd_abs;
+%     a=subMapFreq(Hls,subcarriers,fftsize);
+%     b=ifft(a);
+%     %b(32:end)=0;
+%     windth=sysCfg.firstCp;
+%     b(windth+1:end-windth)=0;
+%     %b(abs(b)<max(abs(b))/10)=0;
+%     c=fft(b);
+%     Hd=FreqMapSub(c,subcarriers);
+    Hd0=Hls;
+    Hd_abs=abs(Hls).^2;
+    Hd=conj(Hls)./Hd_abs;
     %Hd=(Hd)./Hd_abs;
     
     %ht=ifft(Hls,sysCfg.subcarriers);
