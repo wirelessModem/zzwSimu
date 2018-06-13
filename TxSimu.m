@@ -1,4 +1,4 @@
-function [txWaveFormWithCh,txDmrs,txData]=TxSimu(SNR,chan)
+function [txWaveForm,txDmrs,txData]=TxSimu()
 global puschDMRS;
 sysCfg=sysCfgStr();
 subcarriers=sysCfg.subcarriers;
@@ -45,6 +45,6 @@ end
 %% wireless channel
 %a=fft(txWaveForm); %F2T
 %txWaveFormWithCh=awgn(a,SNR);
-txWaveFormWithCh=channelpath(txWaveForm,chan,SNR);
+%txWaveFormWithCh=channelpath(txWaveForm,chan,SNR);
 
 end

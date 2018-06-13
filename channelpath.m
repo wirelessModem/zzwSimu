@@ -49,7 +49,7 @@ if strcmp(channelchoise,'awgn')
     %channelOut0=awgn(Timesignal,SNR);%,'measured');
 elseif strcmp(channelchoise,'ETU') %multiPath    
     plusdoppler=rayleighchan(ts,300);%max is 300
-    plusdoppler.ResetBeforeFiltering=0;
+    plusdoppler.ResetBeforeFiltering=1;
     plusdoppler.PathDelay=[0];% 10*ts ];%20*ts];
     plusdoppler.AvgPathGaindB=[0];%; 0];% 0];
     b=sqrt(sum(10.^(plusdoppler.AvgPathGaindB(1,:)/10)));
@@ -57,7 +57,7 @@ elseif strcmp(channelchoise,'ETU') %multiPath
     channelmodel=EVA;
 elseif strcmp(channelchoise,'EVA') %multiPath 
     plusdoppler=rayleighchan(ts,70);%max is 70
-    plusdoppler.ResetBeforeFiltering=0;
+    plusdoppler.ResetBeforeFiltering=1;
     plusdoppler.PathDelay=[0];% 10*ts ];%20*ts];
     plusdoppler.AvgPathGaindB=[0];%; 0];% 0];
     b=sqrt(sum(10.^(plusdoppler.AvgPathGaindB(1,:)/10)));
@@ -67,7 +67,7 @@ elseif strcmp(channelchoise,'EPA')% multiPath+rayleigh!!!
     
      
     plusdoppler=rayleighchan(ts,5);%max is 5
-    plusdoppler.ResetBeforeFiltering=0;
+    plusdoppler.ResetBeforeFiltering=1;
     plusdoppler.PathDelay=[0];% 10*ts ];%20*ts];
     plusdoppler.AvgPathGaindB=[0];%; 0];% 0];
     b=sqrt(sum(10.^(plusdoppler.AvgPathGaindB(1,:)/10)));
@@ -174,8 +174,19 @@ channelOut = channelOut0(1:length(Timesignal));
 %channelOut1 = channelOut1 + n*sqrt(1200/2048);
 
 a=fft(channelOut); %F2T
-b=awgn(a,SNR);
-channelOut=ifft(b); % T2F
+
+%----------------信道处理--------------------------------------
+Tx_signal_power=sum(abs(a).^2)/length(a);
+noise_var=Tx_signal_power/(10^(SNR/10));
+x=length(a);
+rnoise=noise_var*(randi(21,x,1)-11)/10;
+Inoise=noise_var*(randi(21,x,1)-11)/10;
+noise=complex(rnoise,Inoise);
+
+Rx_data = a+noise;
+
+%b=awgn(a,SNR);
+channelOut=ifft(Rx_data); % T2F
 %channelOut = channelOut0(1:length(Timesignal));
 %channelOut = [channelOut0(1:sum(sys.Ncplength(1:sys.Osn))+sys.Nfft*sys.Osn);channelOut1(1:sum(sys.Ncplength(1:sys.Osn))+sys.Nfft*sys.Osn)];
 

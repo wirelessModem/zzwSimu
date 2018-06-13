@@ -21,8 +21,8 @@ classdef sysCfgStr
         %symboln=3.84e6/256/1000; %ms
         
         
-        modm='64QAM';%'QPSK';%'16QAM';%[1:BPSK,2:QPSK,4:16QAM,6:64QAM]
-        modbits=6;%2;%4;
+        modm='16QAM';%'QPSK';%'16QAM';%[1:BPSK,2:QPSK,4:16QAM,6:64QAM]
+        modbits=4;%2;%4;
         
     end
 end
