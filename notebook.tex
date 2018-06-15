@@ -141,7 +141,7 @@
     \def\gt{>}
     \def\lt{<}
     % Document parameters
-    \title{zzwNotebook}
+    \title{Untitled1}
     
     
     
@@ -280,86 +280,12 @@
     
 
     
-    \begin{Verbatim}[commandchars=\\\{\}]
-{\color{incolor}In [{\color{incolor}1}]:} \PY{c}{\PYZpc{}lsmagic}
-\end{Verbatim}
+    \[\sqrt{x}\]
 
+    \[\sqrt{x}\]
 
-    \begin{Verbatim}[commandchars=\\\{\}]
-Available line magics:
-\%activity  \%cd  \%connect\_info  \%conversation  \%dot  \%download  \%edit  \%get  \%help  \%html  \%include  \%install  \%install\_magic  \%javascript  \%jigsaw  \%kernel  \%kx  \%latex  \%load  \%ls  \%lsmagic  \%macro  \%magic  \%matplotlib  \%parallel  \%plot  \%pmap  \%px  \%python  \%reload\_magics  \%restart  \%run  \%scheme  \%set  \%shell
+    \[\sqrt{x}\]
 
-Available cell magics:
-\%\%activity  \%\%brain  \%\%conversation  \%\%debug  \%\%dot  \%\%file  \%\%help  \%\%html  \%\%javascript  \%\%kx  \%\%latex  \%\%macro  \%\%pipe  \%\%processing  \%\%px  \%\%python  \%\%scheme  \%\%shell  \%\%show  \%\%time  \%\%tutor
-
-    \end{Verbatim}
-
-    \begin{Verbatim}[commandchars=\\\{\}]
-{\color{incolor}In [{\color{incolor}2}]:} \PY{c}{\PYZpc{}load zzwmain.m}
-\end{Verbatim}
-
-
-    \subsection{自组网仿真主程序}\label{ux81eaux7ec4ux7f51ux4effux771fux4e3bux7a0bux5e8f}
-
-    \begin{Verbatim}[commandchars=\\\{\}]
-{\color{incolor}In [{\color{incolor}5}]:} \PY{c}{\PYZpc{}matlab notebook}
-        
-        
-        \PY{n}{clear} \PY{n}{all}\PY{p}{;}
-        \PY{n}{close} \PY{n}{all}\PY{p}{;}
-        \PY{n}{sysCfg}\PY{p}{=}\PY{n}{sysCfgStr}\PY{p}{(}\PY{p}{)}\PY{p}{;}
-        \PY{k}{global} \PY{n}{puschDMRS}\PY{p}{;}
-        
-        \PY{c}{\PYZpc{}\PYZpc{} generate DMRS}
-        \PY{n}{ue}\PY{p}{.}\PY{n}{NPUSCHID} \PY{p}{=} \PY{l+m+mi}{42}\PY{p}{;}
-        \PY{n}{ue}\PY{p}{.}\PY{n}{NDMRSID} \PY{p}{=} \PY{l+m+mi}{1}\PY{p}{;}
-        \PY{n}{ue}\PY{p}{.}\PY{n}{NSubframe} \PY{p}{=} \PY{l+m+mi}{0}\PY{p}{;}
-        \PY{n}{chs}\PY{p}{.}\PY{n}{PRBSet} \PY{p}{=} \PY{p}{(}\PY{l+m+mi}{0}\PY{p}{:}\PY{l+m+mi}{24}\PY{p}{)}\PY{p}{.}\PY{o}{\PYZsq{}}\PY{p}{;}
-        \PY{n}{puschDMRS} \PY{p}{=} \PY{n}{ltePUSCHDRS}\PY{p}{(}\PY{n}{ue}\PY{p}{,}\PY{n}{chs}\PY{p}{)}\PY{p}{;}
-        \PY{n}{DMRS}\PY{p}{=}\PY{p}{[}\PY{n}{puschDMRS}\PY{p}{(}\PY{l+m+mi}{1}\PY{p}{:}\PY{l+m+mi}{300}\PY{p}{)}\PY{p}{.}\PY{o}{\PYZsq{}}\PY{p}{;}\PY{n}{puschDMRS}\PY{p}{(}\PY{l+m+mi}{301}\PY{p}{:}\PY{k}{end}\PY{p}{)}\PY{p}{.}\PY{o}{\PYZsq{}}\PY{p}{]}\PY{p}{;} \PY{c}{\PYZpc{} only use the DMRS(1,:)}
-        
-        \PY{n}{Ber}\PY{p}{=}\PY{p}{[}\PY{p}{]}\PY{p}{;}
-        \PY{k}{for} \PY{n}{SNR}\PY{p}{=}\PY{l+m+mi}{1}\PY{p}{:}\PY{l+m+mi}{1}\PY{p}{:}\PY{l+m+mi}{30}
-            \PY{k}{for} \PY{n+nb}{i}\PY{p}{=}\PY{l+m+mi}{1}\PY{p}{:}\PY{l+m+mi}{10}
-                \PY{n}{BerRaw}\PY{p}{(}\PY{n}{SNR}\PY{p}{,}\PY{n+nb}{i}\PY{p}{)}\PY{p}{=}\PY{n}{runonce}\PY{p}{(}\PY{l+s}{\PYZsq{}}\PY{l+s}{noCHE\PYZsq{}}\PY{p}{,}\PY{l+s}{\PYZsq{}}\PY{l+s}{noEQ\PYZsq{}}\PY{p}{,}\PY{n}{SNR}\PY{p}{)}\PY{p}{;}
-                \PY{n}{BerZF}\PY{p}{(}\PY{n}{SNR}\PY{p}{,}\PY{n+nb}{i}\PY{p}{)}\PY{p}{=}\PY{n}{runonce}\PY{p}{(}\PY{l+s}{\PYZsq{}}\PY{l+s}{LS\PYZsq{}}\PY{p}{,}\PY{l+s}{\PYZsq{}}\PY{l+s}{ZF\PYZsq{}}\PY{p}{,}\PY{n}{SNR}\PY{p}{)}\PY{p}{;}
-            \PY{k}{end}
-            
-        \PY{k}{end}
-        \PY{n}{b}\PY{p}{=}\PY{n}{sum}\PY{p}{(}\PY{n}{BerRaw}\PY{p}{,}\PY{l+m+mi}{2}\PY{p}{)}\PY{o}{/}\PY{l+m+mi}{10}\PY{p}{;}
-        \PY{n}{semilogy}\PY{p}{(}\PY{l+m+mi}{1}\PY{p}{:}\PY{l+m+mi}{30}\PY{p}{,}\PY{n}{b}\PY{p}{,}\PY{l+s}{\PYZsq{}}\PY{l+s}{b\PYZhy{}\PYZhy{}\PYZsq{}}\PY{p}{)}\PY{p}{;}\PY{n}{hold} \PY{n}{on}\PY{p}{;}
-        \PY{n}{b}\PY{p}{=}\PY{n}{sum}\PY{p}{(}\PY{n}{BerZF}\PY{p}{,}\PY{l+m+mi}{2}\PY{p}{)}\PY{o}{/}\PY{l+m+mi}{10}\PY{p}{;}
-        \PY{n}{semilogy}\PY{p}{(}\PY{l+m+mi}{1}\PY{p}{:}\PY{l+m+mi}{30}\PY{p}{,}\PY{n}{b}\PY{p}{,}\PY{l+s}{\PYZsq{}}\PY{l+s}{r\PYZhy{}x\PYZsq{}}\PY{p}{)}\PY{p}{;}\PY{n}{hold} \PY{n}{on}\PY{p}{;}
-        \PY{n}{semilogy}\PY{p}{(}\PY{l+m+mi}{30}\PY{p}{:}\PY{l+m+mi}{30}\PY{p}{,}\PY{l+m+mf}{0.01}\PY{p}{:}\PY{l+m+mf}{0.1}\PY{p}{:}\PY{l+m+mf}{0.01}\PY{p}{,}\PY{l+s}{\PYZsq{}}\PY{l+s}{g.\PYZsq{}}\PY{p}{)}\PY{p}{;}\PY{n}{grid} \PY{n}{on}\PY{p}{;}
-        
-        \PY{c}{\PYZpc{}scatterplot(RxDataTd(1,:))}
-        
-        \PY{c}{\PYZpc{}a=txWaveFormWithCh(37:end);\PYZpc{} remove CP}
-        \PY{c}{\PYZpc{}a=fft(a,512);\PYZpc{} FFT}
-        \PY{c}{\PYZpc{}a=ifft(a,300);\PYZpc{} IDFT}
-        \PY{c}{\PYZpc{}scatterplot(a)}
-        \PY{c}{\PYZpc{}}
-        
-        
-        \PY{c}{\PYZpc{}\PYZsq{}OK\PYZsq{}}
-\end{Verbatim}
-
-
-    \begin{Verbatim}[commandchars=\\\{\}]
-
-ans =
-
-    'OK'
-
-
-
-    \end{Verbatim}
-
-    \begin{center}
-    \adjustimage{max size={0.9\linewidth}{0.9\paperheight}}{output_3_1.png}
-    \end{center}
-    { \hspace*{\fill} \\}
-    
 
     % Add a bibliography block to the postdoc
     
